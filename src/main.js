@@ -16,7 +16,7 @@ function init(){
   c3D.appendChild(renderer.domElement);
 
   scene = new THREE.Scene();
-  var path = '/Game/PhiThuyen/Image/terrain/';
+  var path = './Image/terrain/';
   var format = '.jpg';
   var urls = [
     path + 'space-posx' + format, path + 'space-negx' + format,
