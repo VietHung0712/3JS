@@ -50,14 +50,6 @@ function init(){
   model.add(axesHelperRotate);
 
   model.add(camera);
-
-  model.add(cameragroup);
-  model.add(cameragroupA);
-  model.add(cameragroupD);
-  model.add(cameragroupS);
-  model.add(cameragroupW);
-  
-  
   scene.add(model);
   
   renderer.render(scene, camera);
