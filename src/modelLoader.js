@@ -13,6 +13,7 @@ export class ModelLoader {
             this.model = gltf.scene;
             this.model.position.set(0, 0, 0);
             this.model.scale.set(1, 1.3, 1);
+            
             this.scene.add(this.model);
 
             if (onLoadCallback) onLoadCallback(this.model);

@@ -1,7 +1,7 @@
 import * as THREE from "../build/three.module.js";
 
 export class Controller {
-    constructor(model, camera, powerFireElement) {
+    constructor(model, camera, powerFireElement, bulletManager) {
         this.model = model;
         this.camera = camera;
         this.model.add(this.camera);
@@ -25,6 +25,8 @@ export class Controller {
         this.cameraGroups.q.position.set(1, 1, 5);
         this.cameraGroups.e.position.set(-1, 1, 5);
         this.cameraGroups.shift.position.set(0, 1.5, 7);
+
+        this.bulletManager = bulletManager;
 
         this.initEventListeners();
     }
@@ -58,6 +60,7 @@ export class Controller {
                 this.keys.shift = true;
                 break;
             case " ":
+                this.shoot();
                 this.keys.space = true;
                 break;
         }
@@ -88,8 +91,19 @@ export class Controller {
                 break;
             case " ":
                 this.keys.space = false;
+                
                 break;
         }
+    }
+
+    shoot() {
+        if (!this.bulletManager) return; // Kiểm tra nếu chưa có BulletManager
+
+        let position = this.model.position.clone(); // Lấy vị trí nhân vật
+        let direction = new THREE.Vector3();
+        this.camera.getWorldDirection(direction); // Lấy hướng mà camera đang nhìn
+
+        this.bulletManager.shootBullet(position, direction);
     }
 
     update() {
@@ -105,7 +119,7 @@ export class Controller {
             this.camera.position.lerp(this.cameraGroups.q.position, 0.02);
         } else if (this.keys.e) {
             this.model.rotateZ(-toRadians(1 / 6));
-            // camera.position.lerp(cameragroupE.position, 0.02);
+            this.camera.position.lerp(this.cameraGroups.e.position, 0.02);
         }
         if (this.keys.w) {
             this.model.rotateX(toRadians(1 / 6));
@@ -119,6 +133,7 @@ export class Controller {
             this.camera.position.lerp(this.cameraGroups.shift.position, 0.02);
         }
         if (this.keys.space) {
+            this.shoot();
             this.powerFireElement.style.transform = "scale(0.7)";
         } else {
             this.powerFireElement.style.transform = "scale(1)";
@@ -129,4 +144,5 @@ export class Controller {
             this.camera.position.lerp(this.cameraGroups.default.position, 0.04);
         }
     }
+
 }

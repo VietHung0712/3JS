@@ -20,6 +20,11 @@ export class SceneManager {
         this.ambientLight = new THREE.AmbientLight(0xffffff);
         this.directionalLight = new THREE.DirectionalLight(0xffffff, 5);
         this.scene.add(this.ambientLight, this.directionalLight);
+
+        this.axesHelper = new THREE.AxesHelper(50);
+        this.axesHelperRotate = new THREE.AxesHelper(50);
+        this.axesHelperRotate.rotateY(toRadians(180));
+        this.scene.add(this.ambientLight, this.axesHelperRotate);
     }
 
     onResize() {
