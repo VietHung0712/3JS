@@ -27,6 +27,8 @@ export class Controller {
         this.cameraGroups.shift.position.set(0, 1.5, 7);
 
         this.bulletManager = bulletManager;
+        this.shootingInterval = null;
+        this.shootDelay = 3000;
 
         this.initEventListeners();
     }
@@ -34,6 +36,12 @@ export class Controller {
     initEventListeners() {
         window.addEventListener('keydown', (event) => this.handleKeyDown(event));
         window.addEventListener('keyup', (event) => this.handleKeyUp(event));
+        window.addEventListener('mousedown', () => {
+            this.keys.space = true;
+        });
+        window.addEventListener('mouseup', () => {
+            this.keys.space = false;
+        });
     }
 
     handleKeyDown(event) {
@@ -60,7 +68,6 @@ export class Controller {
                 this.keys.shift = true;
                 break;
             case " ":
-                this.shoot();
                 this.keys.space = true;
                 break;
         }
@@ -91,20 +98,52 @@ export class Controller {
                 break;
             case " ":
                 this.keys.space = false;
-                
+
                 break;
         }
     }
 
-    shoot() {
-        if (!this.bulletManager) return; // Kiểm tra nếu chưa có BulletManager
-
-        let position = this.model.position.clone(); // Lấy vị trí nhân vật
-        let direction = new THREE.Vector3();
-        this.camera.getWorldDirection(direction); // Lấy hướng mà camera đang nhìn
-
-        this.bulletManager.shootBullet(position, direction);
+    startShooting() {
+        if (this.shootingInterval) return;
+        this.shoot();
+        this.shootingInterval = setInterval(() => {
+            this.shoot();
+        }, this.shootDelay);
     }
+
+    stopShooting() {
+        clearInterval(this.shootingInterval);
+        this.shootingInterval = null;
+    }
+
+    shoot() {
+        if (!this.bulletManager) return;
+    
+        let direction = new THREE.Vector3();
+        this.camera.getWorldDirection(direction);
+    
+        let box = new THREE.Box3().setFromObject(this.model);
+        let size = new THREE.Vector3();
+        box.getSize(size);
+        
+        let offsetTopRight = new THREE.Vector3(size.x / 2.5, 0.5, -2);
+        let offsetTopLeft = new THREE.Vector3(-size.x / 2.5, 0.5, -2);
+    
+        offsetTopRight.applyMatrix4(this.model.matrixWorld);
+        offsetTopLeft.applyMatrix4(this.model.matrixWorld);
+
+        let offsetBottomRight = new THREE.Vector3(size.x / 2.5, -0.5, -2);
+        let offsetBottomLeft = new THREE.Vector3(-size.x / 2.5, -0.5, -2);
+    
+        offsetBottomRight.applyMatrix4(this.model.matrixWorld);
+        offsetBottomLeft.applyMatrix4(this.model.matrixWorld);
+    
+        this.bulletManager.shootBullet(offsetTopRight, direction);
+        this.bulletManager.shootBullet(offsetTopLeft, direction);
+        this.bulletManager.shootBullet(offsetBottomRight, direction);
+        this.bulletManager.shootBullet(offsetBottomLeft, direction);
+    }
+
 
     update() {
         if (this.keys.a) {
@@ -133,9 +172,10 @@ export class Controller {
             this.camera.position.lerp(this.cameraGroups.shift.position, 0.02);
         }
         if (this.keys.space) {
-            this.shoot();
+            this.startShooting();
             this.powerFireElement.style.transform = "scale(0.7)";
         } else {
+            this.stopShooting();
             this.powerFireElement.style.transform = "scale(1)";
         }
 
