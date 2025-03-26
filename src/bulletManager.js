@@ -5,7 +5,7 @@ export class BulletManager {
         this.scene = scene;
         this.bullets = [];
         this.bulletSpeed = 0.5;
-        this.maxBullets = 100;
+        this.maxBullets = 50;
     }
 
     shootBullet(position, direction) {
