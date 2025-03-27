@@ -12,7 +12,9 @@ export class ModelLoader {
         this.loader.load(path, (gltf) => {
             this.model = gltf.scene;
             this.model.position.set(0, 0, 0);
-            this.model.scale.set(1, 1.3, 1);
+            this.model.rotation.set(0, 0, 0);
+            this.model.scale.set(1, 1, 1);
+            this.model.updateMatrixWorld(true);
             
             this.scene.add(this.model);
 

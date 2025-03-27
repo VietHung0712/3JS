@@ -1,11 +1,15 @@
 import * as THREE from "../build/three.module.js";
 
 export class Controller {
-    constructor(model, camera, powerFireElement, bulletManager) {
+    constructor(model, camera, powerFireElement, bulletManager, xwingCockpit) {
         this.model = model;
         this.camera = camera;
         this.model.add(this.camera);
+        this.xwingCockpit = xwingCockpit;
         this.powerFireElement = powerFireElement;
+
+        let fpp = false;
+
         this.keys = { a: false, d: false, w: false, s: false, q: false, e: false, shift: false, space: false };
         this.cameraGroups = {
             default: new THREE.Object3D(),
@@ -16,6 +20,7 @@ export class Controller {
             q: new THREE.Object3D(),
             e: new THREE.Object3D(),
             shift: new THREE.Object3D(),
+            fpp: new THREE.Object3D()
         };
         this.cameraGroups.default.position.set(0, 1.5, 5);
         this.cameraGroups.a.position.set(-5, 1.5, 5);
@@ -25,6 +30,8 @@ export class Controller {
         this.cameraGroups.q.position.set(1, 1, 5);
         this.cameraGroups.e.position.set(-1, 1, 5);
         this.cameraGroups.shift.position.set(0, 1.5, 7);
+
+        this.cameraGroups.fpp.position.set(0, 0, -3);
 
         this.bulletManager = bulletManager;
         this.shootingInterval = null;
@@ -70,6 +77,9 @@ export class Controller {
             case " ":
                 this.keys.space = true;
                 break;
+            case "v" || "V":
+                this.fpp = !this.fpp;
+                break;
         }
     }
 
@@ -98,7 +108,6 @@ export class Controller {
                 break;
             case " ":
                 this.keys.space = false;
-
                 break;
         }
     }
@@ -118,26 +127,26 @@ export class Controller {
 
     shoot() {
         if (!this.bulletManager) return;
-    
+
         let direction = new THREE.Vector3();
         this.camera.getWorldDirection(direction);
-    
+
         let box = new THREE.Box3().setFromObject(this.model);
         let size = new THREE.Vector3();
         box.getSize(size);
-        
+
         let offsetTopRight = new THREE.Vector3(size.x / 2.5, 0.5, -2);
         let offsetTopLeft = new THREE.Vector3(-size.x / 2.5, 0.5, -2);
-    
+
         offsetTopRight.applyMatrix4(this.model.matrixWorld);
         offsetTopLeft.applyMatrix4(this.model.matrixWorld);
 
         let offsetBottomRight = new THREE.Vector3(size.x / 2.5, -0.5, -2);
         let offsetBottomLeft = new THREE.Vector3(-size.x / 2.5, -0.5, -2);
-    
+
         offsetBottomRight.applyMatrix4(this.model.matrixWorld);
         offsetBottomLeft.applyMatrix4(this.model.matrixWorld);
-    
+
         this.bulletManager.shootBullet(offsetTopRight, direction);
         this.bulletManager.shootBullet(offsetTopLeft, direction);
         this.bulletManager.shootBullet(offsetBottomRight, direction);
@@ -148,28 +157,21 @@ export class Controller {
     update() {
         if (this.keys.a) {
             this.model.rotateY(toRadians(1 / 6));
-            this.camera.position.lerp(this.cameraGroups.a.position, 0.02);
         } else if (this.keys.d) {
             this.model.rotateY(-toRadians(1 / 6));
-            this.camera.position.lerp(this.cameraGroups.d.position, 0.02);
         }
         if (this.keys.q) {
             this.model.rotateZ(toRadians(1 / 6));
-            this.camera.position.lerp(this.cameraGroups.q.position, 0.02);
         } else if (this.keys.e) {
             this.model.rotateZ(-toRadians(1 / 6));
-            this.camera.position.lerp(this.cameraGroups.e.position, 0.02);
         }
         if (this.keys.w) {
             this.model.rotateX(toRadians(1 / 6));
-            this.camera.position.lerp(this.cameraGroups.w.position, 0.02);
         } else if (this.keys.s) {
             this.model.rotateX(-toRadians(1 / 6));
-            this.camera.position.lerp(this.cameraGroups.s.position, 0.02);
         }
         if (this.keys.shift) {
             this.model.translateZ(-0.02);
-            this.camera.position.lerp(this.cameraGroups.shift.position, 0.02);
         }
         if (this.keys.space) {
             this.startShooting();
@@ -178,10 +180,41 @@ export class Controller {
             this.stopShooting();
             this.powerFireElement.style.transform = "scale(1)";
         }
-
         if (this.model) {
             this.model.translateZ(-0.01);
-            this.camera.position.lerp(this.cameraGroups.default.position, 0.04);
+        }
+
+        if (!this.fpp) {
+            if (this.keys.a) {
+                this.camera.position.lerp(this.cameraGroups.a.position, 0.02);
+            } else if (this.keys.d) {
+                this.camera.position.lerp(this.cameraGroups.d.position, 0.02);
+            }
+            if (this.keys.q) {
+                this.camera.position.lerp(this.cameraGroups.q.position, 0.02);
+            } else if (this.keys.e) {
+                this.camera.position.lerp(this.cameraGroups.e.position, 0.02);
+            }
+            if (this.keys.w) {
+                this.camera.position.lerp(this.cameraGroups.w.position, 0.02);
+            } else if (this.keys.s) {
+                this.camera.position.lerp(this.cameraGroups.s.position, 0.02);
+            }
+            if (this.keys.shift) {
+                this.camera.position.lerp(this.cameraGroups.shift.position, 0.02);
+            }
+
+            if (this.model) {
+                this.xwingCockpit.style.opacity = "0";
+                this.xwingCockpit.style.transform = "scale(.1)";
+                this.camera.position.lerp(this.cameraGroups.default.position, 0.04);
+            }
+        } else {
+            if (this.model) {
+                this.camera.position.lerp(this.cameraGroups.fpp.position, 0.04);
+                this.xwingCockpit.style.opacity = "1";
+                this.xwingCockpit.style.transform = "scale(1)";
+            }
         }
     }
 

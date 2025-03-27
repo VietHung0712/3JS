@@ -14,7 +14,7 @@ export class SceneManager {
 
         // Camera
         this.camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, 1.5, 5);
+        this.camera.position.set(0, 50, 5);
 
         // Ánh sáng
         this.ambientLight = new THREE.AmbientLight(0xffffff);
