@@ -1,14 +1,15 @@
 import * as THREE from "../build/three.module.js";
 
 export class Controller {
-    constructor(model, camera, powerFireElement, bulletManager, xwingCockpit) {
+    constructor(model, camera, powerFireElement, bulletManager, xwingCockpit, container) {
         this.model = model;
         this.camera = camera;
         this.model.add(this.camera);
         this.xwingCockpit = xwingCockpit;
         this.powerFireElement = powerFireElement;
+        this.container = container;
 
-        let fpp = false;
+        this.fpp = false;
 
         this.keys = { a: false, d: false, w: false, s: false, q: false, e: false, shift: false, space: false };
         this.cameraGroups = {
@@ -30,7 +31,6 @@ export class Controller {
         this.cameraGroups.q.position.set(1, 1, 5);
         this.cameraGroups.e.position.set(-1, 1, 5);
         this.cameraGroups.shift.position.set(0, 1.5, 7);
-
         this.cameraGroups.fpp.position.set(0, 0, -3);
 
         this.bulletManager = bulletManager;
@@ -43,8 +43,10 @@ export class Controller {
     initEventListeners() {
         window.addEventListener('keydown', (event) => this.handleKeyDown(event));
         window.addEventListener('keyup', (event) => this.handleKeyUp(event));
-        window.addEventListener('mousedown', () => {
-            this.keys.space = true;
+        window.addEventListener('mousedown', (event) => {
+            if(event.button === 0){
+                this.keys.space = true;
+            }
         });
         window.addEventListener('mouseup', () => {
             this.keys.space = false;
